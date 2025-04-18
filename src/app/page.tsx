@@ -153,7 +153,7 @@ export default function Home() {
   return (
     <div className="flex">
       {/* Sidebar */}
-      <aside className="hidden min-w-[272px] min-h-screen bg-[#1b181f] p-2 border-r sm:flex sm:flex-col border-white/30">
+      <aside className="hidden min-w-[272px] min-h-screen bg-black p-2 border-r sm:flex sm:flex-col border-white/30">
         <div className="flex flex-col items-start gap-y-1 border-b border-white/30">
           <h1 className="text-white font-semibold text-2xl pl-4 my-5 uppercase">Vibra Music</h1>
           <div className="grid grid-cols-1 gap-2 w-full">
@@ -203,11 +203,6 @@ export default function Home() {
               <>
                 <SongsGenres />
                 <Recommendations userId={userId} onSelectVideo={handleSelectVideo} />
-                <Playlists
-                  userId={userId}
-                  currentSong={videoId ? { videoId, title, artist } : undefined}
-                  onSelectSong={handleSelectVideo}
-                />
               </>
             )}
             {videoId && (

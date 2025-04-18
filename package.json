@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@radix-ui/react-slider": "^1.2.4",
+    "@vercel/kv": "^3.0.0",
     "appwrite": "^17.0.1",
     "axios": "^1.8.4",
     "discord-rpc": "^4.0.1",

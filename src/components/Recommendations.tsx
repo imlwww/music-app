@@ -29,16 +29,15 @@ export default function Recommendations({
         const favoriteGenres = JSON.parse(profile.favoriteGenres || '[]');
 
         const query = favoriteArtists[0] || favoriteGenres[0] || 'pop';
-        const res = await fetch(
-          `/api/spotify/search?query=${encodeURIComponent(query)}&type=track`
-        );
+        const res = await fetch(`/api/spotify/search?query=${encodeURIComponent(query)}&type=track`);
         if (res.ok) {
           const tracks = await res.json();
-          setRecommendations(tracks);
+          setRecommendations(tracks.filter((track: any) => track.videoId)); // Filtra faixas sem videoId
         } else {
           setError('Falha ao carregar recomendações');
         }
       } catch (err) {
+        console.error('Erro em Recommendations:', err);
         setError('Erro ao buscar recomendações');
       }
     }
@@ -46,26 +45,26 @@ export default function Recommendations({
   }, [userId]);
 
   if (error) return <div className="text-red-500">{error}</div>;
-  if (!recommendations.length) return <div>Carregando...</div>;
+  if (!recommendations.length) return <div className="text-white">Carregando...</div>;
 
   return (
     <div className="mb-6">
-      <h2 className="mb-4 text-2xl font-bold">Recomendações</h2>
+      <h2 className="mb-4 text-2xl font-bold text-white">Recomendações</h2>
       <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3">
         {recommendations.map(track => (
           <div key={track.id}>
             <div
               className="cursor-pointer rounded-lg bg-gray-700 p-4 hover:bg-gray-600"
-              onClick={() => onSelectVideo(track.videoId, track.name, track.artist)}
+              onClick={() => track.videoId && onSelectVideo(track.videoId, track.name, track.artist)}
             >
-              <img
+              <Image
                 src={track.image}
                 alt={track.name}
                 width={150}
                 height={150}
                 className="mb-2 rounded"
               />
-              <p className="font-semibold">{track.name}</p>
+              <p className="font-semibold text-white">{track.name}</p>
               <Link href={`/artists/${track.id}`}>
                 <p className="text-sm text-gray-400 underline">{track.artist}</p>
               </Link>
