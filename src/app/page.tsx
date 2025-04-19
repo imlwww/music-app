@@ -195,7 +195,7 @@ export default function Home() {
       {/* Conteúdo Principal */}
       <div className="bg-[#0f0d13] flex flex-col w-full">
         {/* Navbar */}
-        <header className="hidden bg-[#0f0d13] border-b border-white/30 sm:flex justify-between p-2 w-full h-[80px]">
+        <header className=" bg-[#0f0d13] border-b border-white/30 sm:flex justify-between p-2 w-full h-[80px]">
           <BarraDePesquisa onSelectVideo={handleSelectVideo} onSearchResults={handleSearchResults} />
           <div className="grid grid-cols-2 items-center gap-2">
             <div className="bg-white rounded-full h-10 w-10"></div>
@@ -203,7 +203,7 @@ export default function Home() {
           </div>
         </header>
         {/* Conteúdo principal */}
-        <div className="flex flex-col p-4 mx-8 overflow-y-scroll">
+        <div className="flex flex-col p-4 sm:mx-8 overflow-y-scroll">
           <div className="">
             {showOnboarding ? (
               <Onboarding userId={userId} onComplete={() => setShowOnboarding(false)} />

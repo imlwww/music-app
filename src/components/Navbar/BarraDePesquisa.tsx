@@ -73,7 +73,7 @@ export function BarraDePesquisa({
 
   return (
     <>
-      <div className="relative border w-[375px] h-[48px] flex items-center px-2 border-white/30 rounded-lg">
+      <div className="hidden relative border w-[375px] h-[48px] sm:flex items-center px-2 border-white/30 rounded-lg">
         <CiSearch size={30} />
         <input
           className="focus:outline-none w-full ml-4 bg-transparent text-white"
