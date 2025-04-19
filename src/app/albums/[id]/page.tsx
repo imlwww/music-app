@@ -45,7 +45,7 @@ export default function AlbumPage({ params }: { params: { id: string } }) {
     <div className="mx-auto max-w-7xl p-6">
       <h1 className="mb-6 text-3xl font-bold">{album.name}</h1>
       <div className="flex gap-6">
-        <Image src={album.image} alt={album.name} width={200} height={200} className="rounded" />
+        <img src={album.image} alt={album.name} width={200} height={200} className="rounded" />
         <div>
           <p className="text-gray-400">
             Artistas:{' '}

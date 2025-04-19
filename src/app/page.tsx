@@ -11,14 +11,14 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { SongsGenres } from '@/components/GenêrosDeMúsicas';
 import { BarraDePesquisa } from '@/components/Navbar/BarraDePesquisa';
-import Image from 'next/image';
-
-import { FiChevronLeft, FiChevronRight } from "react-icons/fi";
-import { PiMicrophoneStageFill } from "react-icons/pi";
-import { GiHearts } from "react-icons/gi";
-import { FaPlay } from "react-icons/fa";
-import { HiDotsHorizontal } from "react-icons/hi";
 import { ResultadoDePesquisas } from '@/components/ResultadoDePesquisas';
+import FavoriteArtists from '@/components/FavoriteArtists';
+import RecentlyPlayed from '@/components/RecentlyPlayed';
+import NewReleases from '@/components/NewReleases';
+import PopularPlaylists from '@/components/PopularPlaylists';
+import RecommendedAlbums from '@/components/RecommendedAlbums';
+import TopGenres from '@/components/TopGenres';
+import { Sidebar } from '@/components/Sidebar';
 
 export default function Home() {
   const [userId, setUserId] = useState('');
@@ -26,9 +26,6 @@ export default function Home() {
   const [title, setTitle] = useState('');
   const [artist, setArtist] = useState('');
   const [showOnboarding, setShowOnboarding] = useState(false);
-  
-  
-  
   const [queue, setQueue] = useState<
     { videoId: string; title: string; artist: string }[]
   >([]);
@@ -43,17 +40,36 @@ export default function Home() {
     { id: string; name: string; image: string }[]
   >([]);
   const router = useRouter();
-  
+
   useEffect(() => {
     async function checkUser() {
       const user = await getCurrentUser();
       if (user) {
         setUserId(user.$id);
-        const doc = await databases.listDocuments('67fd7524003dfce963aa', '67fd7529003b9ab4a7e1', [
-          Query.equal('userId', user.$id),
-        ]);
-        if (doc.documents.length > 0 && !doc.documents[0].onboardingCompleted) {
-          setShowOnboarding(true);
+        try {
+          const doc = await databases.listDocuments('67fd7524003dfce963aa', '67fd7529003b9ab4a7e1', [
+            Query.equal('userId', user.$id),
+          ]);
+          if (doc.documents.length === 0) {
+            // Novo usuário: criar documento e exibir onboarding
+            await databases.createDocument(
+              '67fd7524003dfce963aa',
+              '67fd7529003b9ab4a7e1',
+              user.$id,
+              {
+                userId: user.$id,
+                favoriteArtists: '[]',
+                favoriteGenres: '[]',
+                recentlyPlayed: '[]',
+                onboardingCompleted: false,
+              }
+            );
+            setShowOnboarding(true);
+          }
+          // Usuários existentes: não exibir onboarding
+        } catch (err) {
+          console.error('Erro ao verificar usuário no Appwrite:', err);
+          router.push('/auth/login');
         }
       } else {
         router.push('/auth/login');
@@ -67,6 +83,28 @@ export default function Home() {
     setVideoId(id);
     setTitle(videoTitle);
     setArtist(videoArtist);
+
+    // Atualizar recentlyPlayed no Appwrite
+    try {
+      const doc = await databases.listDocuments('67fd7524003dfce963aa', '67fd7529003b9ab4a7e1', [
+        Query.equal('userId', userId),
+      ]);
+      const profile = doc.documents[0];
+      const recentlyPlayed = JSON.parse(profile.recentlyPlayed || '[]');
+      recentlyPlayed.unshift({
+        id: id,
+        name: videoTitle,
+        artist: videoArtist,
+        videoId: id,
+        timestamp: Date.now(),
+      });
+      await databases.updateDocument('67fd7524003dfce963aa', '67fd7529003b9ab4a7e1', profile.$id, {
+        recentlyPlayed: JSON.stringify(recentlyPlayed.slice(0, 10)), // Limita a 10 faixas
+      });
+    } catch (err) {
+      console.error('Erro ao atualizar recentlyPlayed:', err);
+    }
+
     await fetchRelated(id);
   };
 
@@ -153,56 +191,38 @@ export default function Home() {
   return (
     <div className="flex">
       {/* Sidebar */}
-      <aside className="hidden min-w-[272px] min-h-screen bg-black p-2 border-r sm:flex sm:flex-col border-white/30">
-        <div className="flex flex-col items-start gap-y-1 border-b border-white/30">
-          <h1 className="text-white font-semibold text-2xl pl-4 my-5 uppercase">Vibra Music</h1>
-          <div className="grid grid-cols-1 gap-2 w-full">
-            <Link href="" className="flex items-center w-full h-[40px] rounded-lg px-4 hover:bg-white/10">
-              <span className="text-white font-semibold text-xl">Home</span>
-            </Link>
-            <Link href="" className="flex items-center w-full h-[40px] rounded-lg px-4 hover:bg-white/10">
-              <span className="text-white font-semibold text-xl">Home</span>
-            </Link>
-            <Link href="" className="flex items-center w-full h-[40px] rounded-lg px-4 hover:bg-white/10">
-              <span className="text-white font-semibold text-xl">Home</span>
-            </Link>
-          </div>
-        </div>
-        <Link href="/favorites" className="flex flex-col">
-          <button className="flex items-center w-full hover:bg-white/10 h-[60px] px-2 rounded-lg my-2 cursor-pointer">
-            <div className="rounded-lg w-12 h-12 bg-white/10 flex items-center justify-center mr-4"></div>
-            <span className="text-white font-semibold">Suas Favoritas</span>
-          </button>
-        </Link>
-        <div className="flex flex-col">
-          <button className="flex items-center w-full hover:bg-white/10 h-[60px] px-2 rounded-lg my-2 cursor-pointer">
-            <div className="rounded-lg w-12 h-12 bg-white/10 flex items-center justify-center mr-4"></div>
-            <span className="text-white font-semibold">Criar Playlist</span>
-          </button>
-        </div>
-      </aside>
+      <Sidebar />
       {/* Conteúdo Principal */}
-      <div className="flex flex-col w-full">
-        {/* Navbar (Barra de Pesquisa + Ícone do Usuário) */}
-        <header className="hidden border-b border-white/30 sm:flex justify-between p-2 w-full h-[80px]">
+      <div className="bg-[#0f0d13] flex flex-col w-full">
+        {/* Navbar */}
+        <header className="hidden bg-[#0f0d13] border-b border-white/30 sm:flex justify-between p-2 w-full h-[80px]">
           <BarraDePesquisa onSelectVideo={handleSelectVideo} onSearchResults={handleSearchResults} />
           <div className="grid grid-cols-2 items-center gap-2">
             <div className="bg-white rounded-full h-10 w-10"></div>
             <div className="bg-white rounded-full h-10 w-10"></div>
           </div>
         </header>
-
         {/* Conteúdo principal */}
-        <div className="flex flex-col p-4 mx-8 ">
-          <div className="overflow-y-scroll">
+        <div className="flex flex-col p-4 mx-8 overflow-y-scroll">
+          <div className="">
             {showOnboarding ? (
               <Onboarding userId={userId} onComplete={() => setShowOnboarding(false)} />
             ) : searchQuery ? (
-              <ResultadoDePesquisas searchResults={searchResults} artistResults={artistResults} albumResults={albumResults} handleSelectVideo={handleSelectVideo} />
+              <ResultadoDePesquisas
+                searchResults={searchResults}
+                artistResults={artistResults}
+                albumResults={albumResults}
+                handleSelectVideo={handleSelectVideo}
+              />
             ) : (
               <>
                 <SongsGenres />
                 <Recommendations userId={userId} onSelectVideo={handleSelectVideo} />
+                <Playlists
+                  userId={userId}
+                  currentSong={videoId ? { videoId, title, artist } : undefined}
+                  onSelectSong={handleSelectVideo}
+                />
               </>
             )}
             {videoId && (

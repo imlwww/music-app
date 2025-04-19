@@ -57,7 +57,7 @@ export default function Recommendations({
               className="cursor-pointer rounded-lg bg-gray-700 p-4 hover:bg-gray-600"
               onClick={() => track.videoId && onSelectVideo(track.videoId, track.name, track.artist)}
             >
-              <Image
+              <img
                 src={track.image}
                 alt={track.name}
                 width={150}

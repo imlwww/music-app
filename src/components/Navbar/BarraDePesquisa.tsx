@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
+import { CiSearch } from "react-icons/ci";
 
 export function BarraDePesquisa({
   onSelectVideo,
@@ -73,6 +74,7 @@ export function BarraDePesquisa({
   return (
     <>
       <div className="relative border w-[375px] h-[48px] flex items-center px-2 border-white/30 rounded-lg">
+        <CiSearch size={30} />
         <input
           className="focus:outline-none w-full ml-4 bg-transparent text-white"
           value={query}
